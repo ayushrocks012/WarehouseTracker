@@ -1,16 +1,9 @@
+// Query Name: A2B_Summary
+// Depends On: SharedSource
+
 let
-    // === Connect to SharePoint via Contents ===
-    Source = SharePoint.Contents("https://abbott.sharepoint.com/sites/GB-AN-HeadOffice", [ApiVersion = 15]),
-    Folder = Source{[Name="Shared Documents"]}[Content],
-    DemandFolder = Folder{[Name="General"]}[Content]{[Name="Demand"]}[Content]{[Name="Master Data Files"]}[Content]{[Name="Daily Tracker Files"]}[Content],
-
-    // === Filter for booking_overview CSV files ===
-    FilteredFiles = Table.SelectRows(DemandFolder, each Text.StartsWith([Name], "booking_overview") and Text.EndsWith([Name], ".csv")),
-    LatestFile = Table.First(Table.Sort(FilteredFiles, {{"Date modified", Order.Descending}}))[Content],
-
-    // === Load CSV ===
-    CsvData = Csv.Document(LatestFile, [Delimiter=",", Encoding=1252, QuoteStyle=QuoteStyle.Csv]),
-    PromotedHeaders = Table.PromoteHeaders(CsvData, [PromoteAllScalars=true]),
+    // === Load latest booking_overview CSV ===
+    PromotedHeaders = SharedSource[LatestCsvByPrefix](SharedSource[DailyTrackerPath], "booking_overview"),
 
     // === Transformations ===
     DuplicatedColumn = Table.DuplicateColumn(PromotedHeaders, "Your Reference", "Your Reference - Copy"),

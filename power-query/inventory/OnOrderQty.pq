@@ -1,3 +1,6 @@
+// Query Name: OnOrderQty
+// Depends On: PBI_Warehouse
+
 let
     Source = #"PBI Warehouse",
     #"Removed Other Columns" = Table.SelectColumns(Source,{"Inbound Warehouse", "Inbound Status", "ECC CODE", "Units"}),

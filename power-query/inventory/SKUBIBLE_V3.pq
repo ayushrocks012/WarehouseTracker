@@ -1,3 +1,6 @@
+// Query Name: SKUBIBLE_V3
+// Depends On: External Web Link
+
 let
     Source = Excel.Workbook(Web.Contents("https://abbott.sharepoint.com/sites/GB-AN-HeadOffice/Shared%20Documents/General/Demand/SKU%20Bible%20V3.xlsx"), null, true),
     SKUBIBLE_Table = Source{[Item="SKUBIBLE",Kind="Table"]}[Data],
