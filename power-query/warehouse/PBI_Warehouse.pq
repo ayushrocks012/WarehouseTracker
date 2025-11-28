@@ -1,3 +1,6 @@
+// Query Name: PBI_Warehouse
+// Depends On: SharedSource
+
 let
     // === Parameters ===
     MonthsBack = -2,
@@ -7,9 +10,7 @@ let
     EndDate = Date.AddMonths(CurrentDate, MonthsForward),
 
     // === Load SharePoint Files (Direct Folder Access) ===
-    Source = SharePoint.Contents("https://abbott.sharepoint.com/sites/GB-AN-HeadOffice", [ApiVersion = 15]),
-    Folder = Source{[Name="Shared Documents"]}[Content],
-    DemandFolder = Folder{[Name="General"]}[Content]{[Name="Demand"]}[Content]{[Name="Master Data Files"]}[Content]{[Name="Daily Tracker Files UK Departures PBI"]}[Content],
+    DemandFolder = SharedSource[DailyTrackerPbiFolder],
 
     FilteredFiles = Table.SelectRows(DemandFolder, each Text.StartsWith([Name], "UK Departures") and Text.EndsWith([Name], ".xlsx")),
     SortedFiles = Table.Sort(FilteredFiles, {{"Date modified", Order.Descending}}),

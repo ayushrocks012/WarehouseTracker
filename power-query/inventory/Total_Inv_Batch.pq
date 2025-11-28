@@ -1,3 +1,6 @@
+// Query Name: Total_Inv_Batch
+// Depends On: AUK_Inv_Batch, AUL_Inv_Batch, SKUBIBLE_V3
+
 let
     Source = Table.Combine({AUK_Inv_Batch, AUL_Inv_Batch}),
     #"Changed Type" = Table.TransformColumnTypes(Source,{{"Expiry", type date}}),

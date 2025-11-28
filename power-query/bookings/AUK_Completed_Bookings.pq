@@ -1,19 +1,15 @@
-let
-    // Connect to SharePoint root
-    Source = SharePoint.Contents("https://abbott.sharepoint.com/sites/GB-AN-HeadOffice", [ApiVersion = 15]),
+// Query Name: AUK_Completed_Bookings
+// Depends On: SharedSource
 
+let
     // Navigate to folder where Completed Bookings files reside
-    SharedDocs = Source{[Name="Shared Documents"]}[Content],
-    GeneralFolder = SharedDocs{[Name="General"]}[Content],
-    DemandFolder = GeneralFolder{[Name="Demand"]}[Content],
-    MasterDataFolder = DemandFolder{[Name="Master Data Files"]}[Content],
-    DailyTrackerFolder = MasterDataFolder{[Name="Daily Tracker Files"]}[Content],
+    DailyTrackerFolder = SharedSource[DailyTrackerFolder],
 
     // Filter only Excel files starting with "Completed Bookings"
     FilteredFiles = Table.SelectRows(DailyTrackerFolder, each Text.StartsWith([Name], "Completed Bookings") and Text.EndsWith([Name], ".xlsx")),
 
     // Sort by Date modified descending and get latest file
-    LatestFile = Table.First(Table.Sort(FilteredFiles, {{"Date modified", Order.Descending}}))[Content],
+    LatestFile = SharedSource[LatestContent](FilteredFiles),
 
     // Load Excel workbook and select "Data" sheet
     ExcelData = Excel.Workbook(LatestFile, null, true),
