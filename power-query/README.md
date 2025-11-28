@@ -24,4 +24,3 @@ Import queries in the following sequence to avoid missing references:
 ## Naming conventions
 - Filenames are PascalCase with underscores to mirror the expected query names.
 - Each file begins with a header noting the intended query name and its direct dependencies to assist with ordering and troubleshooting.
-- `SharedSource` now exposes `LatestFileByPrefix(folderPath, prefix, [extension])` to quickly and reliably fetch the newest SharePoint file in a folder. This helper is used by inventory inputs to avoid repeated scans and throw clear errors when no matching file exists.

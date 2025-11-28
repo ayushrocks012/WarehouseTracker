@@ -1,6 +1,3 @@
-// Query Name: A2B_Summary
-// Depends On: SharedSource
-
 let
     // === Filter for booking_overview CSV files ===
     DemandFolder = SharedSource[DailyTrackerFolder],

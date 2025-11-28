@@ -1,6 +1,3 @@
-// Query Name: AUK_Completed_Bookings
-// Depends On: SharedSource
-
 let
     // Navigate to folder where Completed Bookings files reside
     DailyTrackerFolder = SharedSource[DailyTrackerFolder],

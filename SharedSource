@@ -1,6 +1,3 @@
-// Query Name: SharedSource
-// Depends On: None
-
 let
     SiteUrl = "https://abbott.sharepoint.com/sites/GB-AN-HeadOffice",
     ApiVersion = 15,
