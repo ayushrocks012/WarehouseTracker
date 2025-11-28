@@ -1,6 +1,3 @@
-// Query Name: SKUBIBLE
-// Depends On: SharedSource
-
 let
     // Navigate to folder where SKU Bible resides
     DemandFolder = SharedSource[DemandFolder],
