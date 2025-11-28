@@ -1,19 +1,13 @@
+// Query Name: A2B_Summary
+// Depends On: SharedSource
+
 let
-    // === Connect to SharePoint via Contents ===
-    Source = SharePoint.Contents("https://abbott.sharepoint.com/sites/GB-AN-HeadOffice", [ApiVersion = 15]),
-    Folder = Source{[Name="Shared Documents"]}[Content],
-    DemandFolder = Folder{[Name="General"]}[Content]{[Name="Demand"]}[Content]{[Name="Master Data Files"]}[Content]{[Name="Daily Tracker Files"]}[Content],
-
-    // === Filter for booking_overview CSV files ===
-    FilteredFiles = Table.SelectRows(DemandFolder, each Text.StartsWith([Name], "booking_overview") and Text.EndsWith([Name], ".csv")),
-    LatestFile = Table.First(Table.Sort(FilteredFiles, {{"Date modified", Order.Descending}}))[Content],
-
-    // === Load CSV ===
-    CsvData = Csv.Document(LatestFile, [Delimiter=",", Encoding=1252, QuoteStyle=QuoteStyle.Csv]),
-    PromotedHeaders = Table.PromoteHeaders(CsvData, [PromoteAllScalars=true]),
+    // === Load latest booking_overview CSV ===
+    PromotedHeaders = SharedSource[LatestCsvByPrefix](SharedSource[DailyTrackerPath], "booking_overview"),
+    WithSourceFile = SharedSource[WithFileNameColumn](PromotedHeaders),
 
     // === Transformations ===
-    DuplicatedColumn = Table.DuplicateColumn(PromotedHeaders, "Your Reference", "Your Reference - Copy"),
+    DuplicatedColumn = Table.DuplicateColumn(WithSourceFile, "Your Reference", "Your Reference - Copy"),
     SplitColumn = Table.SplitColumn(DuplicatedColumn, "Your Reference - Copy", Splitter.SplitTextByDelimiter(" / ", QuoteStyle.Csv), {"Breda Tour", "Departure"}),
     RenamedColumns = Table.RenameColumns(SplitColumn, {{"Status", "Sub status"}, {"Delivery Date", "Expected Delivery Date"}}),
 
@@ -42,7 +36,7 @@ let
     ),
 
     AddedCustom = Table.AddColumn(WithLocation, "Custom Cleared Status", each if [Customs Cleared]= "" then "No" else "Yes"),
-    RemovedOtherColumns = Table.SelectColumns(AddedCustom, {"Booking ID", "Your Reference", "Collection Date", "Expected Delivery Date", "Sailing Date", "Breda Tour", "Departure", "Status", "Location", "Custom Cleared Status"}),
+    RemovedOtherColumns = Table.SelectColumns(AddedCustom, {"Booking ID", "Your Reference", "Collection Date", "Expected Delivery Date", "Sailing Date", "Breda Tour", "Departure", "Status", "Location", "Custom Cleared Status", "SourceFileName"}),
     ChangedType = Table.TransformColumnTypes(RemovedOtherColumns, {{"Collection Date", type date}, {"Expected Delivery Date", type date}, {"Sailing Date", type date}, {"Departure", Int64.Type}})
 in
     ChangedType
