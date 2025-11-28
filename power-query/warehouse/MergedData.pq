@@ -1,6 +1,3 @@
-// Query Name: MergedData
-// Depends On: SharedSource
-
 let
     // Navigate to folder where MasterMassiveNew.xlsb resides
     MasterDataFolder = SharedSource[MasterDataFiles],
