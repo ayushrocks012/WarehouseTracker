@@ -1,3 +1,6 @@
+// Query Name: AUL_Inv_SKU
+// Depends On: SharedSource
+
 let
     Source = SharedSource[Files],
 

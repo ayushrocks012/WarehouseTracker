@@ -1,3 +1,6 @@
+// Query Name: CurrMonthADS
+// Depends On: SharedSource
+
 let
     Source = SharedSource[Files],
     FilteredRows = Table.SelectRows(Source, each
