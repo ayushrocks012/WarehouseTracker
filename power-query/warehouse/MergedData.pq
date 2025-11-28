@@ -1,12 +1,9 @@
-let
-    // Connect to SharePoint root
-    Source = SharePoint.Contents("https://abbott.sharepoint.com/sites/GB-AN-HeadOffice", [ApiVersion = 15]),
+// Query Name: MergedData
+// Depends On: SharedSource
 
+let
     // Navigate to folder where MasterMassiveNew.xlsb resides
-    SharedDocs = Source{[Name="Shared Documents"]}[Content],
-    GeneralFolder = SharedDocs{[Name="General"]}[Content],
-    DemandFolder = GeneralFolder{[Name="Demand"]}[Content],
-    MasterDataFolder = DemandFolder{[Name="Master Data Files"]}[Content],
+    MasterDataFolder = SharedSource[MasterDataFiles],
     DMFNewFolder = MasterDataFolder{[Name="DMF New"]}[Content],
 
     // Get the file
