@@ -1,11 +1,13 @@
+// Query Name: CurrMonthADS
+// Depends On: SharedSource
+
 let
-    Source = SharePoint.Files("https://abbott.sharepoint.com/sites/GB-AN-HeadOffice", [ApiVersion = 15]),
-    FilteredRows = Table.SelectRows(Source, each 
-        Text.StartsWith([Name], "Inventory Batch") and 
+    Source = SharedSource[Files],
+    FilteredRows = Table.SelectRows(Source, each
+        Text.StartsWith([Name], "Inventory Batch") and
         Text.EndsWith([Name], ".xlsx") and
-        [Folder Path] = "https://abbott.sharepoint.com/sites/GB-AN-HeadOffice/Shared Documents/General/Demand/Master Data Files/Daily Tracker Files/"),
-    SortedRows = Table.Sort(FilteredRows, {"Date modified", Order.Descending}),
-    LatestFile = Table.FirstN(SortedRows, 1),
+        [Folder Path] = SharedSource[DailyTrackerPath]),
+    LatestFile = SharedSource[LatestTableEntry](FilteredRows),
     ExcelBinary = LatestFile{0}[Content],
     ExcelData = Excel.Workbook(ExcelBinary, null, true),
     Data_Sheet = ExcelData{[Item="Data", Kind="Sheet"]}[Data],
@@ -17,7 +19,7 @@ let
         if [Lock Code] = "" and [Zone] = "DESPATCH" then "ALLOCATED" 
         else if [Lock Code] = "" and [Zone] = "Goodsin" then "RECEIPT" 
         else if [Lock Code] = "" then "AVAILABLE" 
-        else if [Lock Code] = "SHORTDATE" or [Lock Code] = "DMGD" or [Lock Code] = "BLOCKED" or [Lock Code] = "QCHOLD" or [Lock Code] = "EXPD" or [Lock Code] = "SCRAP" then "SCHROTT"  
+        else if [Lock Code] = "SHORTDATE" or [Lock Code] = "DMGD" or [Lock Code] = "BLOCKED" or [Lock Code] = "RETURNBKLD" or [Lock Code] = "QCHOLD" or [Lock Code] = "EXPD" or [Lock Code] = "SCRAP" then "SCHROTT"  
         else "NEW LOCK CODE TO BE ADDED"),
     
     #"Added Combined Storage Bin" = Table.AddColumn(#"Added Combined Storage Type", "Combined Storage Bin", each
@@ -27,12 +29,12 @@ let
         else if [Lock Code] = "DMGD" then "DAMAGED" 
         else if [Lock Code] = "QCHOLD" then "QA BLOCKED" 
         else if [Lock Code] = "BLOCKED" then "RETURN BLOCKED" 
+        else if [Lock Code] = "RETURNBLKD" then "RETURN BLOCKED"
         else if [Lock Code] = "EXPD" then "EXPIRED" 
         else if [Lock Code] = "SCRAP" then "SCHROTT" 
         else "NEW LOCK CODE TO BE ADDED"),
     #"Added Net Inventory" = Table.AddColumn(#"Added Combined Storage Bin", "Net Inventory", each if [Qty] < 0 then 0 else [Qty] - [Qty Alloc]),
-    #"Removed Columns" = Table.RemoveColumns(#"Added Net Inventory",{"Location", "Zone", "Lock Code", "Client", "Origin", "Client Product Code", "Tag ID", "Description", "Qty", "Qty Alloc"}),
-    #"Changed Type" = Table.TransformColumnTypes(#"Removed Columns",{{"Expiry", type date}, {"Net Inventory", Int64.Type}}),
-    #"Grouped Rows" = Table.Group(#"Changed Type", {"Product Code", "Batch", "Expiry", "Warehouse", "Combined Storage Type", "Combined Storage Bin"}, {{"NET INVENTORY", each List.Sum([Net Inventory]), type nullable number}})
+    #"Removed Columns" = Table.RemoveColumns(#"Added Net Inventory",{"Client Product Code"}),
+    #"Changed Type" = Table.TransformColumnTypes(#"Removed Columns",{{"Expiry", type date}, {"Qty", Int64.Type}, {"Qty Alloc", Int64.Type}, {"Net Inventory", Int64.Type}})
 in
-    #"Grouped Rows"
+    #"Changed Type"

@@ -1,11 +1,13 @@
+// Query Name: AUL_TagIds_Only
+// Depends On: SharedSource
+
 let
-    Source = SharePoint.Files("https://abbott.sharepoint.com/sites/GB-AN-HeadOffice", [ApiVersion = 15]),
-    FilteredRows = Table.SelectRows(Source, each 
-        Text.StartsWith([Name], "Inventory Batch") and 
+    Source = SharedSource[Files],
+    FilteredRows = Table.SelectRows(Source, each
+        Text.StartsWith([Name], "Inventory Batch") and
         Text.EndsWith([Name], ".xlsx") and
-        [Folder Path] = "https://abbott.sharepoint.com/sites/GB-AN-HeadOffice/Shared Documents/General/Demand/Master Data Files/Daily Tracker Files/"),
-    SortedRows = Table.Sort(FilteredRows, {"Date modified", Order.Descending}),
-    LatestFile = Table.FirstN(SortedRows, 1),
+        [Folder Path] = SharedSource[DailyTrackerPath]),
+    LatestFile = SharedSource[LatestTableEntry](FilteredRows),
     ExcelBinary = LatestFile{0}[Content],
     ExcelData = Excel.Workbook(ExcelBinary, null, true),
     Data_Sheet = ExcelData{[Item="Data", Kind="Sheet"]}[Data],

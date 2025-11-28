@@ -1,16 +1,16 @@
+// Query Name: AUL_Inv_SKU
+// Depends On: SharedSource
+
 let
-    Source = SharePoint.Files("https://abbott.sharepoint.com/sites/GB-AN-HeadOffice", [ApiVersion = 15]),
+    Source = SharedSource[Files],
 
-    // Filter only Excel files starting with "Completed Bookings"
-    FilteredRows = Table.SelectRows(Source, each 
-        Text.StartsWith([Name], "Inventory by SKU") and 
+    // Filter only Excel files starting with "Inventory by SKU"
+    FilteredRows = Table.SelectRows(Source, each
+        Text.StartsWith([Name], "Inventory by SKU") and
         Text.EndsWith([Name], ".xlsx") and
-        [Folder Path] = "https://abbott.sharepoint.com/sites/GB-AN-HeadOffice/Shared Documents/General/Demand/Master Data Files/Daily Tracker Files/"),
+        [Folder Path] = SharedSource[DailyTrackerPath]),
     // Sort by Date modified descending
-    SortedRows = Table.Sort(FilteredRows, {"Date modified", Order.Descending}),
-
-    // Get the first (latest) file
-    LatestFile = Table.FirstN(SortedRows, 1),
+    LatestFile = SharedSource[LatestTableEntry](FilteredRows),
 
     // Dynamically access the binary content
     ExcelBinary = LatestFile{0}[Content],

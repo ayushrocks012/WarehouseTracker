@@ -1,11 +1,13 @@
+// Query Name: AUK_Inv_Batch
+// Depends On: SharedSource
+
 let
-    Source = SharePoint.Files("https://abbott.sharepoint.com/sites/GB-AN-HeadOffice", [ApiVersion = 15]),
-    FilteredRows = Table.SelectRows(Source, each 
-        Text.StartsWith([Name], "LX02") and 
+    Source = SharedSource[Files],
+    FilteredRows = Table.SelectRows(Source, each
+        Text.StartsWith([Name], "LX02") and
         Text.EndsWith(Text.Lower([Name]), ".xlsx") and
-        [Folder Path] = "https://abbott.sharepoint.com/sites/GB-AN-HeadOffice/Shared Documents/General/Demand/Master Data Files/Daily Tracker Files/"),
-    SortedRows = Table.Sort(FilteredRows, {"Date modified", Order.Descending}),
-    LatestFile = Table.FirstN(SortedRows, 1),
+        [Folder Path] = SharedSource[DailyTrackerPath]),
+    LatestFile = SharedSource[LatestTableEntry](FilteredRows),
     ExcelBinary = LatestFile{0}[Content],
     ExcelData = Excel.Workbook(ExcelBinary, null, true),
     Data_Sheet = ExcelData{[Item="Sheet1", Kind="Sheet"]}[Data],
