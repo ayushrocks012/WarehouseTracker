@@ -3,7 +3,7 @@
 This repository now organizes all `.pq` scripts under the `power-query/` folder. Subfolders group related queries and keep filenames aligned with their intended Power Query query names.
 
 ## Directory structure
-- `SharedSource.pq` – foundational SharePoint connection and helpers reused across queries (latest file + CSV/sheet loaders are already buffered to reduce re-scans).
+- `SharedSource.pq` – foundational SharePoint connection and helpers reused across queries.
 - `bookings/` – booking and departure-related inputs.
 - `inventory/` – SKU, batch, expiry, and inbound inventory transformations.
 - `warehouse/` – warehouse-facing datasets and merges used by downstream views.
@@ -19,7 +19,7 @@ Import queries in the following sequence to avoid missing references:
 ## Importing the scripts
 - In Power BI Desktop or Excel Power Query, create a blank query, open **Advanced Editor**, and paste the contents of each `.pq` file.
 - **Align the query name** with the `.pq` filename (e.g., import `Total_Inv_Batch.pq` into a query named `Total_Inv_Batch`) so references resolve correctly.
-- If your environment uses parameters for the SharePoint site or file paths, update them inside `SharedSource` **before** loading any dependent queries. `SharedSource` now exposes buffered helpers (`LatestSheet` / `LatestCsvByPrefix`) that will error early if the expected file or sheet is missing, so keeping paths current avoids runtime surprises.
+- If your environment uses parameters for the SharePoint site or file paths, update them inside `SharedSource` **before** loading any dependent queries.
 
 ## Naming conventions
 - Filenames are PascalCase with underscores to mirror the expected query names.

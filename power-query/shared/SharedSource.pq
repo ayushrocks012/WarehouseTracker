@@ -7,8 +7,7 @@ let
 
     // Base connections
     Contents = SharePoint.Contents(SiteUrl, [ApiVersion = ApiVersion]),
-    // Buffer SharePoint.Files to avoid multiple round-trips when filtering in dependent queries
-    Files = Table.Buffer(SharePoint.Files(SiteUrl, [ApiVersion = ApiVersion])),
+    Files = SharePoint.Files(SiteUrl, [ApiVersion = ApiVersion]),
 
     // Common folders
     SharedDocuments = Contents{[Name="Shared Documents"]}[Content],
@@ -27,21 +26,7 @@ let
         Table.FirstN(Table.Sort(table, {{"Date modified", Order.Descending}}), 1),
     LatestContent = (table as table) as binary =>
         let latestRow = Table.First(Table.Sort(table, {{"Date modified", Order.Descending}}))
-        in latestRow[Content],
-    LatestFileByPrefix = (folderPath as text, prefix as text, optional extension as nullable text) as record =>
-        let
-            expectedExtension = if extension = null then ".xlsx" else extension,
-            filtered = Table.SelectRows(Files, each
-                [Folder Path] = folderPath and
-                Text.StartsWith([Name], prefix) and
-                Text.EndsWith(Text.Lower([Name]), Text.Lower(expectedExtension))
-            ),
-            sorted = Table.Sort(filtered, {{"Date modified", Order.Descending}})
-        in
-            if Table.IsEmpty(sorted) then
-                error "No files found in " & folderPath & " matching prefix '" & prefix & "' and extension '" & expectedExtension & "'."
-            else
-                sorted{0}
+        in latestRow[Content]
 in
     [
         SiteUrl = SiteUrl,
@@ -56,6 +41,5 @@ in
         DailyTrackerPath = DailyTrackerPath,
         DailyTrackerPbiPath = DailyTrackerPbiPath,
         LatestTableEntry = LatestTableEntry,
-        LatestContent = LatestContent,
-        LatestFileByPrefix = LatestFileByPrefix
+        LatestContent = LatestContent
     ]

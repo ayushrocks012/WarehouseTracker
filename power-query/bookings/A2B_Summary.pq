@@ -1,9 +1,12 @@
-// Query Name: A2B_Summary
-// Depends On: SharedSource
-
 let
-    // === Load latest booking_overview CSV ===
-    PromotedHeaders = SharedSource[LatestCsvByPrefix](SharedSource[DailyTrackerPath], "booking_overview"),
+    // === Filter for booking_overview CSV files ===
+    DemandFolder = SharedSource[DailyTrackerFolder],
+    FilteredFiles = Table.SelectRows(DemandFolder, each Text.StartsWith([Name], "booking_overview") and Text.EndsWith([Name], ".csv")),
+    LatestFile = SharedSource[LatestContent](FilteredFiles),
+
+    // === Load CSV ===
+    CsvData = Csv.Document(LatestFile, [Delimiter=",", Encoding=1252, QuoteStyle=QuoteStyle.Csv]),
+    PromotedHeaders = Table.PromoteHeaders(CsvData, [PromoteAllScalars=true]),
 
     // === Transformations ===
     DuplicatedColumn = Table.DuplicateColumn(PromotedHeaders, "Your Reference", "Your Reference - Copy"),
